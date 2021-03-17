@@ -1,7 +1,7 @@
 /*
  * Creates a Panel using Swing Components consisting of a StopWatch.
  * Displays the timer counter, and buttons to start, pause and reset the watch.
- * Also has a button of Lap Timer for counting laps, each lap is calculated and displayed on the panel.
+ * Also has a button of Lap Timer for counting laps (a timed session), each lap is calculated and displayed on the panel.
  * This is not the Main class file.
  * @author 04xRaynal
  */
@@ -180,7 +180,9 @@ public class StopWatch extends JPanel implements ActionListener {
 		}
 		
 		if(e.getSource() == reset) {
-			t.stop();
+			if(t != null) {					//if reset button is pressed to reset the laps without pressing the start button, it throws runtime error if null is not checked as Timer t doesn't start until start button is pressed
+				t.stop();
+			}
 			reset();
 			reset.setEnabled(false); pause.setEnabled(false);
 			start.setEnabled(true);
@@ -194,6 +196,7 @@ public class StopWatch extends JPanel implements ActionListener {
 		
 		if(e.getSource() == timer) {
 			setLaps();
+			reset.setEnabled(true);
 		}
 	}
 
