@@ -1,7 +1,7 @@
 /*
  * Creates a Panel using Swing Components consisting of a CountDown Timer.
- * Displays the Time Counter, buttons to select hour, minutes, seconds as well as reset, start and pause buttons.
- * Set a time using the hour, minute and seconds buttons and the timer starts counting the set time down to zero. 
+ * Displays the Time Counter, boxes to select hour, minutes, seconds and buttons for reset, start and pause.
+ * Set a time using the hour, minutes and seconds boxes and the timer starts counting the set time down to zero when the start button is pressed. 
  * This is not the Main class file.
  * @author 04xRaynal
  */
