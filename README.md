@@ -3,13 +3,13 @@
 #### A Swing Application containing 4 tabs: Clock, Calendar, StopWatch, Timer
 ---
 Digital & Analog Clock
-![Capture_clock_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_clock_pane.png)
+![Capture_clock_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_clock_pane.PNG)
 ---
 Calendar
-![Capture_calendar_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_calendar_pane.png)
+![Capture_calendar_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_calendar_pane.PNG)
 ---
 StopWatch
-![Capture_stopwatch_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_stopwatch_pane.png)
+![Capture_stopwatch_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_stopwatch_pane.PNG)
 ---
 Timer
-![Capture_timer_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_timer_pane.png)
+![Capture_timer_panel](https://github.com/04xRaynal/clock_app_JavaSwing/tree/master/Captured_Shots/Capture_timer_pane.PNG)
