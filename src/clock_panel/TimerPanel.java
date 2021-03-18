@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,6 +35,7 @@ public class TimerPanel extends JPanel implements ActionListener{
 	JButton  reset, start, pause;
 	
 	Timer timer;                             //importing javax.swing.Timer class
+	
 	
 	public TimerPanel() {
 		hour = minutes = seconds = 0;
@@ -111,6 +113,8 @@ public class TimerPanel extends JPanel implements ActionListener{
 		Image resetImage = Toolkit.getDefaultToolkit().getImage("reset-icon.png").getScaledInstance(50, 50, Image.SCALE_SMOOTH);        //Scaled Instance sets the image width and height
 		reset = new JButton(new ImageIcon(resetImage));
 		reset.setBounds(30, 220, resetImage.getWidth(getParent()), resetImage.getHeight(getParent()));									//width and height of the button taken from the image, hence no blank spaces
+		reset.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		reset.setContentAreaFilled(false);												//empty area around the image is not filled
 		reset.addActionListener(this);
 		reset.setEnabled(false);					//disabled
 		add(reset);
@@ -119,6 +123,8 @@ public class TimerPanel extends JPanel implements ActionListener{
 		Image startImage = Toolkit.getDefaultToolkit().getImage("play-icon.png").getScaledInstance(50, 50, Image.SCALE_SMOOTH);			//Scaled Instance sets the image width and height
 		start = new JButton(new ImageIcon(startImage));
 		start.setBounds(100, 220, startImage.getWidth(getParent()), startImage.getHeight(getParent()));									//width and height of the button taken from the image, hence no blank spaces
+		start.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		start.setContentAreaFilled(false);												//empty area around the image is not filled
 		start.addActionListener(this);
 		add(start);
 		
@@ -126,6 +132,8 @@ public class TimerPanel extends JPanel implements ActionListener{
 		Image pauseImage = Toolkit.getDefaultToolkit().getImage("pause-icon.jpg").getScaledInstance(50, 50, Image.SCALE_SMOOTH);		//Scaled Instance sets the image width and height
 		pause = new JButton(new ImageIcon(pauseImage));
 		pause.setBounds(170, 220, pauseImage.getWidth(getParent()), pauseImage.getHeight(getParent()));									//width and height of the button taken from the image, hence no blank spaces
+		pause.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		pause.setContentAreaFilled(false);												//empty area around the image is not filled
 		pause.addActionListener(this);
 		pause.setEnabled(false);                 	 //disabled
 		add(pause);
