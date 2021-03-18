@@ -1,5 +1,5 @@
 /*
- * Creates a Panel using Swing Components consisting of a StopWatch.
+ * Creates a Panel using Swing Components consisting of a StopWatch synchronized with the System time.
  * Displays the timer counter, and buttons to start, pause and reset the watch.
  * Also has a button of Lap Timer for counting laps (a timed session), each lap is calculated and displayed on the panel.
  * This is not the Main class file.
@@ -13,7 +13,9 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.time.Duration;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,19 +36,21 @@ public class StopWatch extends JPanel implements ActionListener {
 	DefaultListModel<String> listModel;
 	JList<String> timerList;
 	
-	int hour, minute, second, millisecond;
+	long hours, minutes, seconds, milliseconds;
+	long lastTickTime, runningTime, pausedTime;
 	int i = 1;
-	int lapsedHour, lapsedMinute, lapsedSecond, lapsedMillisecond;
+	long lapsedHours, lapsedMinutes, lapsedSeconds;
 	
 	Timer t;
 	
+	
 	public StopWatch() {
-		hour = minute = second = millisecond = 0;
-		lapsedHour = lapsedMinute = lapsedSecond = lapsedMillisecond = 0;
+		hours = minutes = seconds = milliseconds = 0;
+		lastTickTime = runningTime = pausedTime = 0;
+		lapsedHours = lapsedMinutes = lapsedSeconds = 0;
 		
 		setLayout(null);
 		setSize(300, 460);
-		
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			
@@ -59,7 +63,6 @@ public class StopWatch extends JPanel implements ActionListener {
 	
 	
 	public void createAndShowGUI() {
-		
 		label = new JLabel();
 		changeLabel();
 		label.setBounds(38, 5, 250, 50);
@@ -71,6 +74,8 @@ public class StopWatch extends JPanel implements ActionListener {
 		reset = new JButton(new ImageIcon(resetImage));
 		reset.addActionListener(this);
 		reset.setBounds(20, 265, resetImage.getWidth(getParent()), resetImage.getHeight(getParent()));
+		reset.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		reset.setContentAreaFilled(false);												//empty area around the image is not filled
 		reset.setEnabled(false);
 		add(reset);
 		
@@ -78,12 +83,16 @@ public class StopWatch extends JPanel implements ActionListener {
 		start = new JButton(new ImageIcon(startImage));
 		start.addActionListener(this);
 		start.setBounds(80, 265, startImage.getWidth(getParent()), startImage.getHeight(getParent()));
+		start.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		start.setContentAreaFilled(false);												//empty area around the image is not filled
 		add(start);
 		
 		Image pauseImage = Toolkit.getDefaultToolkit().getImage("pause-icon.jpg").getScaledInstance(40, 40, Image.SCALE_SMOOTH);
 		pause = new JButton(new ImageIcon(pauseImage));
 		pause.addActionListener(this);
 		pause.setBounds(140, 265, pauseImage.getWidth(getParent()), pauseImage.getHeight(getParent()));
+		pause.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		pause.setContentAreaFilled(false);												//empty area around the image is not filled
 		pause.setEnabled(false);
 		add(pause);
 		
@@ -91,6 +100,8 @@ public class StopWatch extends JPanel implements ActionListener {
 		timer = new JButton(new ImageIcon(timerImage));
 		timer.addActionListener(this);
 		timer.setBounds(200, 290, timerImage.getWidth(getParent()), timerImage.getHeight(getParent()));
+		timer.setBorder(BorderFactory.createEmptyBorder());								//creates empty border
+		timer.setContentAreaFilled(false);												//empty area around the image is not filled
 		add(timer);
 		
 		timerLabel = new JLabel("Lap Timer:");
@@ -100,28 +111,24 @@ public class StopWatch extends JPanel implements ActionListener {
 		
 		listModel = new DefaultListModel<>();
 		timerList = new JList<>(listModel);
-		scrollPane = new JScrollPane(timerList);
+		timerList.setFont(new Font("Arial", Font.ITALIC, 14));
+		scrollPane = new JScrollPane(timerList);										//ScrollPane holds the list
 		scrollPane.setBounds(5, 55, 238, 200);
 		add(scrollPane);
 	}
 	
 	
 	public void update() {
-		millisecond++;
-		if(millisecond == 1000) {
-			millisecond = 0;
-			second++;
-			
-			if(second == 60) {
-				second = 0;
-				minute++;
-				
-				if(minute == 60) {
-					minute = 0;
-					hour++;
-				}
-			}
-		}
+		runningTime = System.currentTimeMillis() - lastTickTime + pausedTime;			//Calculates the time elapsed since the start button was clicked, pausedTime is initially zero, pauseTime gets a value when the pause button is clicked
+		Duration duration = Duration.ofMillis(runningTime);								//Duration holds the amount of time
+		
+		hours = duration.toHours();									//gets the amount of hours from duration
+		duration = duration.minusHours(hours);						//subtracts the hour value from duration
+		minutes = duration.toMinutes();								//gets the amount of minutes from duration
+		duration = duration.minusMinutes(minutes);					//subtracts the minutes value from duration
+		milliseconds = duration.toMillis();							//remaining duration is converted into milliseconds
+		seconds = milliseconds/1000;								//1 second = 1000 ms, amount of seconds is retrieved from milliseconds
+		milliseconds -= (seconds * 1000);							//subtracts seconds from milliseconds, to get the actual value of milliseconds
 	}
 	
 	
@@ -133,7 +140,8 @@ public class StopWatch extends JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 		
-		hour = minute = second = millisecond = 0;
+		hours = minutes = seconds = milliseconds = 0;				//values are reseted back to 0
+		lapsedHours = lapsedMinutes = lapsedSeconds = 0;
 		
 		changeLabel();
 		listModel.removeAllElements();
@@ -143,21 +151,23 @@ public class StopWatch extends JPanel implements ActionListener {
 	
 	public void changeLabel() {
 		DecimalFormat formatter = new DecimalFormat("00");		
-		label.setText(formatter.format(hour) + " : " + formatter.format(minute) + " : " + formatter.format(second) + " : " + formatter.format(millisecond));
+		label.setText(formatter.format(hours) + " : " + formatter.format(minutes) + " : " + formatter.format(seconds) + " . " + formatter.format(milliseconds));
 	}
 	
 	
 	public void setLaps() {
 		timerList.setFont(new Font("Arial", Font.ITALIC, 15));
 		DecimalFormat formatter = new DecimalFormat("00");
-		lapsedHour = Math.abs(hour - lapsedHour) ;
-		lapsedMinute = Math.abs(minute - lapsedMinute);
-		lapsedSecond = Math.abs(second - lapsedSecond);
+		lapsedHours = Math.abs(hours - lapsedHours) ;
+		lapsedMinutes = Math.abs(minutes - lapsedMinutes);
+		lapsedSeconds = Math.abs(seconds - lapsedSeconds);
 		
-		listModel.addElement("Lap " + i++ + ":   " + formatter.format(lapsedHour) + " : " + formatter.format(lapsedMinute) + " : " + formatter.format(lapsedSecond) + "        ||    Elapsed Time:  " + formatter.format(hour) + " : " + formatter.format(minute) + " : " + formatter.format(second));
-		lapsedHour = hour;
-		lapsedMinute = minute;
-		lapsedSecond = second;
+		listModel.addElement("Lap " + i++ + "                         " + formatter.format(hours) + " : " + formatter.format(minutes) + " : " + formatter.format(seconds));
+		listModel.addElement("Elapsed: " + formatter.format(lapsedHours) + " : " + formatter.format(lapsedMinutes) + " : " + formatter.format(lapsedSeconds) );
+		listModel.addElement("-------------------------------------------");
+		lapsedHours = hours;
+		lapsedMinutes = minutes;
+		lapsedSeconds = seconds;
 	}
 
 
@@ -167,6 +177,7 @@ public class StopWatch extends JPanel implements ActionListener {
 		if(e.getSource() == start) {
 			start.setEnabled(false);
 			reset.setEnabled(true);  pause.setEnabled(true);
+			lastTickTime = System.currentTimeMillis();
 			
 			t = new Timer(1, new ActionListener() {
 				
@@ -184,12 +195,14 @@ public class StopWatch extends JPanel implements ActionListener {
 				t.stop();
 			}
 			reset();
+			pausedTime = 0;
 			reset.setEnabled(false); pause.setEnabled(false);
 			start.setEnabled(true);
 		}
 		
 		if(e.getSource() == pause) {
 			t.stop();
+			pausedTime = runningTime;					//stores the time value when the pause button is pressed
 			pause.setEnabled(false);
 			start.setEnabled(true); reset.setEnabled(true);
 		}
