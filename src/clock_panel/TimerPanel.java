@@ -1,5 +1,5 @@
 /*
- * Creates a Panel using Swing Components consisting of a CountDown Timer.
+ * Creates a Panel using Swing Components consisting of a CountDown Timer synchronized with the System Clock.
  * Displays the Time Counter, boxes to select hour, minutes, seconds and buttons for reset, start and pause.
  * Set a time using the hour, minutes and seconds boxes and the timer starts counting the set time down to zero when the start button is pressed. 
  * This is not the Main class file.
@@ -13,6 +13,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.time.Duration;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -28,7 +29,8 @@ public class TimerPanel extends JPanel implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	
 	DecimalFormat formatter = new DecimalFormat("00");      //formats the decimal into string, single digit numbers get padded a left zero ie. int 6 gets formatted as 06, rest numbers as usual ie. 25 as 25, 999 as 999
-	int hour, minutes, seconds;
+	long hours, minutes, seconds;
+	long inputTime, lastTickTime, runningTime, timeLeft;
 	
 	JLabel labelTime, h, min, sec;
 	JComboBox<String> hourComboBox, minutesComboBox, secondsComboBox;
@@ -38,7 +40,7 @@ public class TimerPanel extends JPanel implements ActionListener{
 	
 	
 	public TimerPanel() {
-		hour = minutes = seconds = 0;
+		hours = minutes = seconds = 0;
 		
 		setLayout(null);
 		setSize(300, 400);
@@ -140,16 +142,49 @@ public class TimerPanel extends JPanel implements ActionListener{
 	}
 	
 	
+	public long inputTimeInMilliseconds() {
+		/*
+		 * To covert hour into milliseconds, multiply hour by (60 * 60 * 1000)
+		 * convert minute into milliseconds, multiply minute by (60 * 1000)
+		 * convert second into millisecond, multiply second by 1000  
+		 */
+		return (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000) + 1000;			//1000 millisecond is added as a buffer since the timer starts with a 1000ms delay
+	}
+	
+	
+	public void update() {
+		Duration duration = Duration.ofMillis(timeLeft);								//Duration holds the amount of time
+		
+		hours = duration.toHours();									//gets the amount of hours from duration
+		duration = duration.minusHours(hours);						//subtracts the hour value from duration
+		minutes = duration.toMinutes();								//gets the amount of minutes from duration
+		duration = duration.minusMinutes(minutes);					//subtracts the minutes value from duration
+		seconds = duration.toSeconds();								//gets the amount of seconds from duration
+	}
+	
+	
 	public void changeLabelTimer() {
 //		labelTime.setForeground(Color.BLACK);				
-		labelTime.setText(formatter.format(hour) + " : " + formatter.format(minutes) + " : " + formatter.format(seconds));
+		labelTime.setText(formatter.format(hours) + " : " + formatter.format(minutes) + " : " + formatter.format(seconds));
+	}
+	
+	
+	public void reset() {
+		try {
+			Thread.sleep(1);
+		} catch(InterruptedException ex) {
+			ex.printStackTrace();
+		}
+		
+		hours = minutes = seconds = 0;		//to reset the label to 00:00:00
+		changeLabelTimer();					
 	}
 	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == hourComboBox) {
-			hour = Integer.parseInt(hourComboBox.getItemAt(hourComboBox.getSelectedIndex()));       //Selected Number from ComboBox which is a string gets parsed as an integer
+			hours = Integer.parseInt(hourComboBox.getItemAt(hourComboBox.getSelectedIndex()));       //Selected Number from ComboBox which is a string gets parsed as an integer
 			changeLabelTimer();
 		}
 		
@@ -165,41 +200,31 @@ public class TimerPanel extends JPanel implements ActionListener{
 		
 		if(e.getSource() == start) {
 			reset.setEnabled(true);  pause.setEnabled(true);					//enabling the disabled buttons
-			start.setEnabled(false);										//disabling as to prevent running two timers for the same task
+			start.setEnabled(false);											//disabling as to prevent running two timers for the same task
 			hourComboBox.setEnabled(false);  minutesComboBox.setEnabled(false);  secondsComboBox.setEnabled(false);          //disabling combobox to prevent resetting the numbers, mid countdown
+			
+			inputTime = inputTimeInMilliseconds();						//time selected from the comboboxes are converted into milliseconds
+			lastTickTime = System.currentTimeMillis();
+			
 			timer = new Timer(1000, new ActionListener() {                  //timer to countdown the set time, 1000 ms (1 second) delay
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(hour > 0 || minutes > 0 || seconds > 0 ) {			//to stop when we reach 00:00:00
-						
-						if(seconds == 0) {									//if seconds is zero then seconds gets resetted to 59 and a value from minute is deducted (done to avoid seconds counter going negative)
-							seconds = 59;
-							if(minutes != 0) {								//if minutes is not zero, it is deducted by 1
-								minutes--;
-							}
-							else {											//if minutes is zero, it checks whether the hour is zero, before resetting the minute counter and deducting hour by 1
-								if(hour != 0) {								//if hour is not zero, minutes counter is resetted and hour is deducted by 1
-									minutes = 59;
-									hour--;
-								}
-							}
-						}
-						else {
-							seconds--;										//second is deducted by 1
-						}
-						changeLabelTimer();
-					}
-					else {
+					runningTime = System.currentTimeMillis() - lastTickTime;		//Calculates the time elapsed since the start button was clicked
+					timeLeft = inputTime - runningTime;	
+					
+					update();
+					changeLabelTimer();
+					
+					if(hours <= 0 && seconds <= 0 && minutes <= 0) {
 						Toolkit.getDefaultToolkit().beep();					//for the beep noise when time label gets to 00:00:00
-//						labelTime.setForeground(Color.RED);					
 						timer.stop();										//timer is stopped
-						start.setEnabled(true);								
+						start.setEnabled(true);
+						pause.setEnabled(false);  reset.setEnabled(false);
 						hourComboBox.setSelectedIndex(0);  minutesComboBox.setSelectedIndex(0);  secondsComboBox.setSelectedIndex(0);			//resetting comboboxes to their initial values
 						hourComboBox.setEnabled(true);  minutesComboBox.setEnabled(true);  secondsComboBox.setEnabled(true);					//enabling comboboxes after timer is completed
 					}
 				}
-				
 			});
 
 			timer.start();						//starting timer
@@ -212,11 +237,8 @@ public class TimerPanel extends JPanel implements ActionListener{
 		}
 		
 		if(e.getSource() == reset) {
-			if(timer !=  null) {				//otherwise throws a runtime error if reset is clicked before start, as timer is null
-				timer.stop();					//stopping timer
-			}
-			hour = minutes = seconds = 0;		//to reset the label to 00:00:00
-			changeLabelTimer();					
+			timer.stop();					//stopping timer
+			reset();
 			reset.setEnabled(false);  pause.setEnabled(false); 
 			start.setEnabled(true);
 			hourComboBox.setSelectedIndex(0);  minutesComboBox.setSelectedIndex(0);  secondsComboBox.setSelectedIndex(0);				//resetting comboboxes to their initial values
