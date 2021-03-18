@@ -29,8 +29,8 @@ class DigitalClock extends JPanel implements Runnable{
 	JButton button;
 	JLabel label1, label2;
 	
+	
 	public DigitalClock() {
-		
 		setBackground(Color.WHITE);
 		setLayout(null);
 		
@@ -40,8 +40,7 @@ class DigitalClock extends JPanel implements Runnable{
 			public void run() {
 				createAndShowGUI();
 			}
-		});
-		
+		});	
 	}
 
 	

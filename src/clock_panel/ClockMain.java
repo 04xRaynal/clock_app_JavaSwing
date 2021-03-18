@@ -17,9 +17,8 @@ import javax.swing.SwingUtilities;
 public class ClockMain extends JFrame{
 	
 	private static final long serialVersionUID = 1L;
-
+	
 	public ClockMain() {
-		
 		Image icon = Toolkit.getDefaultToolkit().getImage("clock-icon.png").getScaledInstance(60, 60, Image.SCALE_SMOOTH);
 		setTitle("Clock Application");
 		setIconImage(icon);
