@@ -3,6 +3,7 @@
  * Displays the clock graphic along with the clock hands and reference points for hours, minutes and seconds. 
  * This is not the Main class file.
  * @author 04xRaynal
+ * Reference: https://github.com/paoloboschini/analog-clock
  */
 package clock_panel;
 import java.awt.BasicStroke;
